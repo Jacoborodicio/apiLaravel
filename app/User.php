@@ -15,7 +15,10 @@ class User extends Authenticatable
     const USUARIO_ADMINISTRADOR = 'true';
     const USUARIO_REGULAR = 'false';
 
+    // Especificamos de manera explícita el nombre de la tabla
+    // por cuestiones de seller después y demás que heredan etc
 
+    protected $table = 'users';
     /**
      * The attributes that are mass assignable.
      *
