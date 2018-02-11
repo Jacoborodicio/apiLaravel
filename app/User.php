@@ -43,6 +43,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 
         'remember_token',
+       // verification_token comentar solamente para comprobar la funcionalidad de la verificación sin 
+       // haber implementado el envío de correos.
         'verification_token',
     ];
 

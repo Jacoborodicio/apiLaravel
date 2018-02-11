@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Apicontroller;
 use App\Product;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Storage;
 
 class SellerProductController extends Apicontroller
 {
@@ -44,7 +45,14 @@ class SellerProductController extends Apicontroller
 
         $data = $request->all();
         $data['status'] = \App\Product::PRODUCTO_NO_DISPONIBLE;
-        $data['image'] = './img/1.jpeg';
+        /**
+         * El método store recibe dos parámetros, en sí la ruta de almacenamiento que
+         * parte de la raíz base definida en el sistema de archivos y el sistema de archivos en sí.
+         * Como hemos definido como default nuestro propio sistema de archivos no tenemos que especificar
+         * ningún segundo parámetro(es opcional), y el primero lo dejamos en blanco haciendo que sea
+         * Laravel el que asigne un nombre personalizado y único para cada imagen.
+         */
+        $data['image'] = $request->image->store('');
         $data['seller_id'] = $seller->id;
 
         $product = Product::create($data);
@@ -100,6 +108,18 @@ class SellerProductController extends Apicontroller
                  return $this->errorResponse('Un producto activo debe tener al menos una categoría', 409);
              }
          }
+         /**
+          * Para la actualización de imagen procederemos a eliminar la anterior y subir la nueva independientemente
+          * de si esta es realmente nueva o es la misma, puesto que es complejo y "no worth it" comprobarlo.
+          * DETALLE: En cuanto a la petición a realizar a esta parte del servicio y debido a que HTTP no nos permite
+          * incluir archivos persé en un put (x-url-...) entonces FALSEAMOS una petición POST a PUT incluyendo en uno
+          * de los campos, como clave: _method y como valor: put. De esta forma, aún estando realmente realizando una 
+          * petición POST, Laravel la interpreta como una petición PUT.
+          */
+          if($request->hasFile('image')) {
+            Storage::delete($product->image);
+            $product->image = $request->image->store('');
+          }
 
          if($product->isClean()) {
              return $this->errorResponse('Se debe modificar alguno de los campos para actualizar', 422);
@@ -118,6 +138,7 @@ class SellerProductController extends Apicontroller
     public function destroy(Seller $seller, Product $product)
     {
         $this->verificarVendedor($seller, $product);
+        Storage::delete($product->image);
         $product->delete();
         return $this->showOne($product);
     }

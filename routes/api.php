@@ -111,3 +111,7 @@ Route::resource('sellers.products', 'Seller\SellerProductController', ['except' 
  * Users
  */
 Route::resource('users', 'User\UserController', ['except' => ['create', 'edit']]);
+// Implementación para la verificación por correo electrónico
+Route::name('verify')->get('users/verify/{token}', 'User\UserController@verify');
+// Implementación del reenvío del correo de verificación
+Route::name('resend')->get('users/{}/resend', 'User\UserController@resend');

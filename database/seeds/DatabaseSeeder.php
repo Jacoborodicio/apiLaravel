@@ -33,6 +33,18 @@ class DatabaseSeeder extends Seeder
         // Como no tenemos modelo para la tabla pivote, lo hacemos accediendo mediante DB
         DB::table('category_product')->truncate();
 
+        /**
+         * Algo importante dentro del seeder es: Como en nuestro caso tenemos diversos disparadores en la base de datos,
+         * como ocurre al momento de crear un usuario, que se le envía automáticamente un email, entonces, si ejecutáramos el seeder
+         * se envíarian 1000 emails en este caso, uno por usuario creado. Para EVITAR este "peligro", podemos desactivar todos los disparadores
+         * de eventos para nuestros modelos mediante flush:
+         */
+
+        User::flushEventListeners();
+        Category::flushEventListeners();
+        Product::flushEventListeners();
+        Transaction::flushEventListeners();
+
         // Cantidades a generar
         $cantidadUsuarios = 1000;
         $cantidadCategorias = 30;

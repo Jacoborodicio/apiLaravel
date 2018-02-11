@@ -13,7 +13,10 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DRIVER', 'local'),
+    // 'default' => env('FILESYSTEM_DRIVER', 'local'),
+    // Cambiamos el sistema de archivos por defecto al creado por nosotros
+    // evitando tener que especificarlo en cada operación
+    'default' => env('FILESYSTEM_DRIVER', 'images'),
 
     /*
     |--------------------------------------------------------------------------
@@ -52,6 +55,12 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+        ],
+        // Creamos nuestro propio sistema de archivos para imágenes
+        'images' => [
+            'driver' => 'local',
+            'root' => public_path('img'),
             'visibility' => 'public',
         ],
 

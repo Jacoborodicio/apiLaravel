@@ -20,4 +20,7 @@ trait ApiResponser {
     protected function showOne(Model $instance, $code = 200){
         return $this->successResponse(['data' => $instance], $code);
     }
+    protected function showMsg($msg, $code = 200){
+        return $this->successResponse(['data' => $msg], $code);
+    }
 }
