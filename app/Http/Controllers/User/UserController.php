@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\User;
 use App\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Apicontroller;
 
-class UserController extends Controller
+class UserController extends Apicontroller
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +16,8 @@ class UserController extends Controller
     {
         // Lista todos los usuarios disponibles en ese momento
         $usuarios = User::all();
-        return response()->json(['data' => $usuarios], 200);
+        // return response()->json(['data' => $usuarios], 200);
+        return $this->showAll($usuarios);
     }
 
     /**
@@ -45,7 +46,8 @@ class UserController extends Controller
         $campos['admin'] = User::USUARIO_REGULAR;
 
         $usuario = User::create($campos);
-        return response()->json(['data' => $usuario], 201);
+        // return response()->json(['data' => $usuario], 201);
+        return $this->showOne($usuario, 201);
     }
 
     /**
@@ -54,11 +56,15 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user)
     {
         // Retorna al usuario con id $id
-        $usuario = User::findOrFail($id);
-        return response()->json(['data' => $usuario], 200);
+        // $usuario = User::findOrFail($id);
+        // return response()->json(['data' => $usuario], 200);
+        // if(!$usuario){
+        //     return $this->errorResponse('Usuario no encontrado', 404);
+        // }
+        return $this->showOne($user);
     }
 
     /**
@@ -68,13 +74,14 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
         // Primero "encontramos" al usuario a actualizar
-        $usuario = User::findOrFail($id);
+        // $usuario = User::findOrFail($id);
+        
         // Validación
         $rules = [
-            'email' => 'email|unique:users,email,' . $usuario->id,
+            'email' => 'email|unique:users,email,' . $user->id,
             'password' => 'min:6|confirmed',
             'admin' => 'in:' . User::USUARIO_ADMINISTRADOR . ',' . User::USUARIO_REGULAR,
         ];
@@ -82,34 +89,37 @@ class UserController extends Controller
         $this->validate($request, $rules);
 
         if ($request->has('name')) {
-            $usuario->name = $request->name;
+            $user->name = $request->name;
         }
 
-        if ($request->has('email') && $usuario->email != $request->email) {
+        if ($request->has('email') && $user->email != $request->email) {
             // Debemos generar un nuevo token ya que será un usuario no verificado
-            $usuario->verified = User::USUARIO_NO_VERIFICADO;
-            $usuario->verification_token = User::generarVerificationToken();
-            $usuario->email = $request->email;    
+            $user->verified = User::USUARIO_NO_VERIFICADO;
+            $user->verification_token = User::generarVerificationToken();
+            $user->email = $request->email;    
         }
 
         if ($request->has('password')) {
-            $usuario->password = bcrypt($request->password);
+            $user->password = bcrypt($request->password);
         }
 
         if ($request->has('admin')) {
-            if(!$usuario->esVerificado()) {
-                return response()->json(['error' => 'Únicamente los usuarios verificados pueden cambiar su valor de administrador', 'code' => 409], 409);
+            if(!$user->esVerificado()) {
+                // return response()->json(['error' => 'Únicamente los usuarios verificados pueden cambiar su valor de administrador', 'code' => 409], 409);
+                return $this->errorResponse('Únicamente los usuarios verificados pueden cambiar su valor de administrador', 409);
             }
-            $usuario->admin = $request->admin;
+            $user->admin = $request->admin;
         }
 
-        if (!$usuario->isDirty()) {
-            return response()->json(['error' => 'Se debe especificar al menos un valor diferente para actualizar', 'code' => 422], 422);
+        if (!$user->isDirty()) {
+            // return response()->json(['error' => 'Se debe especificar al menos un valor diferente para actualizar', 'code' => 422], 422);
+            return $this->errorResponse('Se debe especificar al menos un valor diferente apra actualizar', 422);
         }
 
-        $usuario->save();
+        $user->save();
 
-        return response()->json(['data' => $usuario], 200);
+        // return response()->json(['data' => $usuario], 200);
+        return $this->showOne($user);
 
 
     }
@@ -120,8 +130,14 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        // Permite borrar un usuario
+        // $user = User::findOrFail($id);
+
+        $user->delete();
+
+        // return response()->json(['data' => $user], 200);
+        return $this->showOne($user);
     }
 }

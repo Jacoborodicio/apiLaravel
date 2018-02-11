@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Buyer;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-
-class BuyerController extends Controller
+use App\Http\Controllers\Apicontroller;
+use App\Buyer;
+class BuyerController extends Apicontroller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,17 @@ class BuyerController extends Controller
      */
     public function index()
     {
-        //
+        /**
+         * Tener en cuenta que Buyer así como seller heredan de User, por lo que
+         * no podemos hacerlo "normal", únicamente con Buyer::all() ya que lo que 
+         * estaríamos haciendo sería obtener todos los usuarios, cuando realmente sólo
+         * queremos aquellos que posean compras por lo que miramos que tengan transacciones.
+         */
+
+        $compradores = Buyer::has('transactions')->get();
+        // Pasamos de esto a lo siguiente por la implementación del controlador personalizado
+        // return response()->json(['data' => $compradores], 200);
+        return $this->showAll($compradores);
     }
 
     /**
@@ -22,22 +32,7 @@ class BuyerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
+   
     /**
      * Display the specified resource.
      *
@@ -46,40 +41,8 @@ class BuyerController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        $comprador = Buyer::has('transactions')->findOrFail($id);
+        // return response()->json(['data' => $comprador], 200);
+        return $this->showOne($comprador);
     }
 }
